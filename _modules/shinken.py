@@ -1,43 +1,101 @@
 # -*- coding: utf-8 -*-
-import inspect
-import json
+'''
+Support for installing packages with the Shinken CLI tool.
+See https://shinken.readthedocs.org/en/latest/14_contributing/create-and-push-packs.html
+'''
+
 import os
-import yaml
+import json
 import logging
+import ConfigParser
 
 import salt.fileclient
 import salt.utils
 
+log = logging.getLogger(__name__)
 
-__virtualname__ = 'config_gen'
+parser = ConfigParser.ConfigParser()
+
+user_path = os.path.expanduser('~')
+config_path = user_path + '/.shinken.ini'
+
+__outputter__ = {
+    'search': 'txt',
+    'inventory': 'txt',
+    'install': 'txt'
+}
 
 
 def __virtual__():
 
-    return __virtualname__
+    shinken_installed = False
+    shinken_configured = False
+
+    #  Check that the Shinken executable is available.
+    if salt.utils.which('shinken'):
+        shinken_installed = True
+
+    #  Check that the Shinken config file is available.
+    if os.path.isfile(config_path):
+        shinken_configured = True
+
+    if all([shinken_installed, shinken_configured]):
+        parser.read(config_path)
+        return True
+    else:
+        return False
 
 
-def _nagios(section):
-    '''
-    Return a valid Nagios configuration file from a dictionary.
-    '''
+def _verify_package(package):
+    """
+    Verify that the given package has been installed to the Inventory path as specified by the
+    Shinken.ini config file.
+    """
+    package_path = parser.get('paths', 'inventory') + '/' + package + '/package.json'
 
-    logging.info('Generating Nagios Configuration')
+    # Fail if the package.json file is not found.
+    try:
+        package_json = open(package_path, mode='r')
+    except IOError:
+        logging.error('Package: {} was not installed correctly'.format(package))
+        return False
 
-    config_string = 'define ' + section + '{' + '\n'
+    # Fail if the package.json file is not valid JSON.
+    try:
+        package_details = json.loads(package_json.read())
+    except ValueError:
+        logging.error('Package: {} is invalid'.format(package))
+        return False
 
-    for key, value in __salt__['defaults.get'](section).items():
-        logging.error(type(value))
-    config_string += '}'
-    return config_string
+    package_string = json.dumps(package_details, indent=2)
+    logging.info('Package: {} is successfully installed'.format(package))
+    logging.debug('Package Details: {}'.format(package_string))
+
+    package_json.close()
+
+    return True
 
 
-def get(section, format_type):
-    '''
-    Generate a configuration DSL by providing a configuration dictionary and format_type.
-    '''
-    #TODO: Is DSL the correct name?
+def search(package):
+    """
+    Return the search result of the specified package.
+    """
+    result = __salt__['cmd.run']('shinken search {}'.format(package))
+    return result
 
-    if format_type == 'nagios':
-        return _nagios(section)
 
+def inventory():
+    """
+    Return an inventory list of installed packages with the Shinken CLI tool.
+    """
+    result = __salt__['cmd.run']('shinken inventory')
+    return result
+
+
+def install(package):
+    """
+    Install the specified package with the Shinken CLI tool. After the command has been
+    run verify that the package is available in the Shinken inventory path.
+    """
+    __salt__['cmd.run']('shinken install {}'.format(package))
+    return _verify_package(package)
