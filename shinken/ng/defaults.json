@@ -1,0 +1,50 @@
+{
+  "daemon": {
+    "arbiter": {
+      "required": {
+        "arbiter_name": "arbiter-master",
+        "address": "localhost",
+        "port": 7770
+      }
+    },
+    "broker": {
+      "required": {
+        "broker_name": "broker-master",
+        "address": "localhost"
+      }
+    },
+    "poller": {
+      "required": {
+        "poller_name": "poller-master",
+        "address": "localhost"
+      }
+    },
+    "reactionner": {
+      "required": {
+        "reactionner_name": "reactioner-master",
+        "address": "localhost"
+      }
+    },
+    "scheduler": {
+      "required": {
+        "scheduler_name": "scheduler-master",
+        "address": "localhost"
+      }
+    }
+  },
+  "objects": {
+    "host": {
+      "required": {
+        "host_name":"",
+        "alias":"",
+        "address":"",
+        "max_check_attempts":"5",
+        "check_period": "",
+        "contacts": "",
+        "contact_groups": "",
+        "notification_interval": "60",
+        "notification_period": ""
+      }
+    }
+  }
+}
