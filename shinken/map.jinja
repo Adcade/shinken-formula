@@ -2,9 +2,13 @@
     'Debian': {
         'pip': 'python-pip',
         'pycurl': 'python-pycurl',
+        'apache_utils': 'apache2-utils',
+        'nagios_plugins': 'nagios-plugins',
     },
     'RedHat': {
         'pip': 'python-pip',
         'pycurl': 'python-pycurl',
+        'apache_utils': 'httpd-tools',
+        'nagios_plugins': 'nagios-plugins-all',
     },
 }, merge=salt['pillar.get']('shinken:lookup')) %}
