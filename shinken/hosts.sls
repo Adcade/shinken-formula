@@ -5,7 +5,7 @@
 
 shinken_{{ target }}_host_entry_{{ loop.index0 }}:
   file.managed:
-    - name: /tmp/{{ target }}.cfg
+    - name: /etc/shinken/hosts/{{ target }}.cfg
     - user: root
     - group: root
     - mode: 644
