@@ -9,7 +9,7 @@ shinken_{{ target }}_host_entry_{{ loop.index0 }}:
     - user: root
     - group: root
     - mode: 644
-    - source: salt://shinken/files/hosts.cfg
+    - source: salt://shinken/files/host.cfg
     - template: jinja
     - context:
         data: {{ data }}
